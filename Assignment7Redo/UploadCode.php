@@ -1,46 +1,63 @@
 <?php 
 
+//require_once 'crud.php';
+require_once 'pdo_methods.php';
 class folderCreate{
-   require_once("db_conn.php");
-    private $file;
     
-
+   // private $file;
     public function upload(){
-       $this->file = $_POST['chooseFile'];
-        $ext = $_FILES['chooseFile']['type'];
-        $size = $_FILES['chooseFile']['size'];
-
+        // $file = $_POST['chooseFile'];
         if(isset($_POST['upload'])){
+            $fileName = $_POST['fileName'];
 
-         if($ext !="application/pdf"){
+          $ext = $_FILES['chooseFile']['type'];
+          $size = $_FILES['chooseFile']['size'];
+
+             if($ext !="application/pdf"){
              $output = "This file is not a PDF Type.";
-             return $output;
+             
              }
              elseif($size>100000){
                   $output = "this file is too big";
-                  return $output;
               }
              else{
                    $output = "File has been added";
-                   addToDB();
-                   return $output;
-                 }
-            
+                 }  
+                 $this->addFile();
+                 return $output;
         }
-            // }else{
-            //     ("/home/a/k/akesterson/public_html/AssignmentsCPS276/Assignment7/$this->nameFolder")
-            //    
-            //     INSERT INTO table (name, path) VALUES ($this->nameFolder, "/home/a/k/akesterson/public_html/AssignmentsCPS276/Assignment7/$this->nameFolder");
      
     }
-    public function addToDB($fileToAdd,$newFileTab){
-        $sql = "INSERT INTO files(file_name, file_path) VALUES (?, ?);"
-        $args[] = $fileToAdd;
-        $args[] = $newFileTab;
-        execute($sql,$args);
-    }
+    public function addFile(){
+        echo "inside of addFile";
+		$pdo = new PdoMethods();
 
-}
+		/* HERE I CREATE THE SQL STATEMENT I AM BINDING THE PARAMETERS */
+		$sql = "INSERT INTO files (file_name, file_path) VALUES (:fname, :fpath)";
+
+			 
+	    /* THESE BINDINGS ARE LATER INJECTED INTO THE SQL STATEMENT THIS PREVENTS AGAIN SQL INJECTIONS */
+	    $bindings = [
+            [':fname', $_POST["fileName"], 'str'],
+            [':fpath', "pdf_files/" . $_FILES["chooseFile"]["name"], 'str'],
+			
+		];
+
+		/* I AM CALLING THE OTHERBINDED METHOD FROM MY PDO CLASS */
+		$result = $pdo->otherBinded($sql, $bindings);
+
+		/* HERE I AM RETURNING EITHER AN ERROR STRING OR A SUCCESS STRING */
+		if($result === 'error'){
+			return 'There was an error';
+		}
+		else {
+			return 'file data has been added';
+		}
+	}
+	}
+    
+
+
 
 
 ?>

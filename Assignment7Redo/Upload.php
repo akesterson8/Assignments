@@ -5,7 +5,7 @@ if(count($_POST)>0){
   require_once 'UploadCode.php';
   $addFolder = new folderCreate();
   $output = $addFolder->upload(); 
-  $chooseFile = !empty($_REQUEST['chooseFile']) ? $_REQUEST['chooseFile'] : '';
+  //$chooseFile = !empty($_REQUEST['chooseFile']) ? $_REQUEST['chooseFile'] : '';
 }
 
 ?>
@@ -31,7 +31,7 @@ if(count($_POST)>0){
   <div class="mb-3">
     <label for="fileName" class="form-label">File Name</label>
     <input type="FileName" class="form-control" id="fileName" name="fileName">  
-    <input type="File" class="form-text" accept=".pdf" id="chooseFile" name="chooseFile">
+    <input type="File" class="form-text" id="chooseFile" name="chooseFile">
     
   </div>
   <button type="uploadFile" class="btn btn-primary" id="upload" name="upload">Upload File</button>

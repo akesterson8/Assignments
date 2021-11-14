@@ -3,7 +3,7 @@
 /* THE DATABASE CONNECTION CLASS CAN BE STORED OUTSIDE OF THE EXAMPLE FILES SO YOU CANNOT SEE THE CONNECTION INFORMATION. ALSO IT IS MORE SECURE*/
 require_once "db_conn.php";
 class PdoMethods extends DatabaseConn {
-
+	//extends DatabaseConn
 	
 	private $sth;
 	private $conn;

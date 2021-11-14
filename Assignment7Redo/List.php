@@ -1,23 +1,9 @@
 <?php  
-require_once("db_conn.php");
-require_once("pdo_methods.php");
 
-$sql = "SELECT file_name, file_path FROM files";
-$resultSet = createBinding($sql);
+require_once "crud.php";
 
-$list = '';
-foreach($resultSet as $row){
-    $fileName = $row['file_name'];
-    $relPath = $row['file_path'];
-    $list .= "<li> <a target='_blank' href='relPath'>$fileName</a></li>";
-}
+$crud = new Crud();
 
-foreach ($resultSet as $rowVal){
-    $relPath = explode("/", $rowVal['file_path']);
-    $relPath = array_slice($relPath, -2);
-    $relPath = implode("/", $relPath);
-    $rowVal['file_path'] = $relPath;
-}
 
 
 ?>
@@ -39,7 +25,7 @@ foreach ($resultSet as $rowVal){
         <div class="form-group col-md-">
         <h2><b>List Files</b></h2>
 
-        <?=$list?>
+        <?php echo $crud->getFile('list'); ?>
 
   </body>
 </html>
