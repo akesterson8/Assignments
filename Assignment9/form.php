@@ -1,13 +1,11 @@
 <?php 
  $mylink = '<a href="http://russet.wccnet.edu/~akesterson/Assignment9/DisplayNotes.php"> Display Notes </a>';
  $message ="";
- //if(!empty($_REQUEST['addNote']) && $_REQUEST['addNote'] != 'firstload'){
-    require_once 'Date_time.php';  //'classes/Date_time.php'
+ 
+    require_once 'Date_time.php';  
     $dt = new Date_time();
     $message = $dt->add();
- //}else{
-    // $message = '';
- //}
+ 
 
  ?>
 
@@ -26,7 +24,7 @@
 <body>
     <div class="container">
     <h1>Add Note</h1>
-    <form action="form.php" enctype="multipart/form-data" method="post">
+    <form action="form.php" method="post">
     <p> <?php echo $message ?> </p>
     <p> <?php echo $mylink ?> </p>
     <div class="mb-3">

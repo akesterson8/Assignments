@@ -10,29 +10,31 @@ class Date_time{
             $date = $_POST['dateTime'];
            // $datePHP = strtotime($date);
            // $datesql = getdate($date);
+           if(empty($note) || empty($date)){
+               $this->message = "You must enter a Note and Date.";
+           }else{
+            $this->message = "Note added";
             $this->addData();
+           }return $this->message;
         }
         
     }
     public function addData(){
-        echo "inside of addFile ";
+        
+        $timeStamp = $_POST["dateTime"];
+        $noteText = $_POST["noteText"];
+        date_default_timezone_set('America/Detroit');
+        $timeStamp = strtotime($timeStamp);
+        
 		$pdo = new PdoMethods();
 
 		/* HERE I CREATE THE SQL STATEMENT I AM BINDING THE PARAMETERS */
 		$sql = "INSERT INTO dateNotes (note, dates) VALUES (:note, :dates)";
 
-        //convert date to date format
-        //mktime or strtotime
-      //  date_default_timezone_set('America/Detroit');
-       // $datePHP = date_create_from_format('Y-m-d\TH:i',$_POST['dateTime']);
-       // $dateMySql = $datePHP->format('Y-m-d H:i:00');
-        //$dated = mktime($dateMySql);
 	    /* THESE BINDINGS ARE LATER INJECTED INTO THE SQL STATEMENT THIS PREVENTS AGAIN SQL INJECTIONS */
 	    $bindings = [
-            [':note', $_POST["noteText"], 'str'],
-            [':dates', $_POST["dateTime"], 'str'],
-            
-			
+            [':note', $noteText, 'str'],
+            [':dates', $timeStamp, 'int'], 
 		];
 
 		/* I AM CALLING THE OTHERBINDED METHOD FROM MY PDO CLASS */
@@ -48,47 +50,51 @@ class Date_time{
 	}
     public function getData(){
         //$sql = "SELECT date_time, note FROM note WHERE date_time BETWEEN :begDate AND :endDate ORDER BY date_time DESC";
+        require_once('DisplayNotes.php');
+        date_default_timezone_set('America/Detroit');
        
         $pdo = new PdoMethods();
         if(isset($_POST['getNotes'])){
-          $sql = "SELECT note, dates FROM dateNotes WHERE dates BETWEEN :begDate AND :endDate ORDER BY dates DESC";
-          //$sql = "SELECT * FROM dateNotes";
-        $bindings = [   //change bindings
-            [':begDate', $_POST["begDate"], 'str'],
-            [':endDate', $_POST["endDate"], 'str'],
-            
-        ];
-           $resultSet = $pdo->selectBinded($sql,$bindings);
-           
-           //$resultSet = $pdo->otherBinded($sql,$bindings);
-           //$resultSet = $pdo->selectNotBinded($sql);
-        
-        //if(resultSet = error) or count of result set is less than 0 than nothing found, if its greater than print table
-        if($resultSet === 'error'){
-            echo "inside error getDate()";
-            return "Error found";
-        }elseif(count($resultSet) <= 0){
-            echo "inside lessthan 0";
-            return "nothing found";
-        }elseif(count($resultSet) >= 0){
-            echo "inside greaterthan 0";
-        $table = '<table class="table table-striped table-bordered">';
-        $table .= '<thead><tr><th>Date and Time</th><th>Note</th></tr></thead>';
-        $table .= '<tbody>';
-        foreach($resultSet as $row){
-        $table .= '<tr>';
-        $table .= '<td>' . $row["note"];
-        $table .= '<td>' . $row["dates"] . '</td>';
-        $table .= '</tr>';
-        $table .= '</tbody>';
-        $table .= '</table>';
-        return $table;
-        } 
-        } 
+         $begStamp = strtotime($_POST['begDate']);
+         $endStamp = strtotime($_POST['endDate']);
+         $sql = "SELECT note, dates FROM dateNotes WHERE dates BETWEEN $begStamp AND $endStamp ORDER BY dates DESC";
+         // $sql = "SELECT * FROM dateNotes";
           
-        }
+           $records = $pdo->selectNotBinded($sql);
+
+           if($records === 'error'){
+			return 'There has been and error processing your request';
+		}
+		else {
+			if(count($records) != 0){
+				return $this->createList($records, $begStamp, $endStamp);		
+			}
+			else {
+				return 'no notes found';
+			}
+		}
+        }   
+    }       
+    public function createList($records, $begStamp, $endStamp){
+		
+        date_default_timezone_set('America/Detroit');
+        $begStamp = strtotime($_POST['begDate']);
+        $endStamp = strtotime($_POST['endDate']);
+
+        $table = '<tr><th>Date and Time</th><th>Note</th>';
+		foreach ($records as $timeValue){
+            $stamp = $timeValue['dates'];
+            $newstamp = date('m/d/Y h:i A',$stamp);
+                
+            $table.="<tr><td>". $newstamp .
+            "</td><td>" . $timeValue['note'].
+            "</td></tr>";
+            
+    }return $table;
 		
 	}
+
+	
 }
 
 
