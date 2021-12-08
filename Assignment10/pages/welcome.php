@@ -1,7 +1,7 @@
 <?php
 
-function init(){
-    return ["<h1>Welcome</h1>","<p>Welcome Scott</p>"];
+function init($name){
+    return ["<h1>Welcome</h1>","welcome $name"];
 }
 
 ?>

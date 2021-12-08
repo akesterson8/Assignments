@@ -1,9 +1,9 @@
 <?php
 
 $path = "index.php?page=login";
-
+$nav="";
 // function nav1(){
-$nav=<<<HTML
+$adminnav=<<<HTML
     <nav>
         <ul class="nav">
             <li class="nav-item">
@@ -30,63 +30,88 @@ $nav=<<<HTML
 
     </nav>
 HTML;
-// function nav2(){
-// $nav2=<<<HTML
-//     <nav>
-//         <ul class="nav">
-//             <li class="nav-item">
-//                 <a class="nav-link" aria-current="page" href="index.php?page=welcome">Welcome</a>
-//             </li>
-//             <li class="nav-item">
-//                 <a class="nav-link" href="index.php?page=addContact">Add Contact</a>
-//             </li>
-//             <li class="nav-item">
-//                 <a class="nav-link" href="index.php?page=deleteContacts">Delete Contact(s)</a>
-//             </li>
-//             <li class="nav-item">
-//                 <a class="nav-link" href="index.php?page=login">Logout</a>
-//             </li>
+
+$staffnav=<<<HTML
+    <nav>
+        <ul class="nav">
+            <li class="nav-item">
+                <a class="nav-link" aria-current="page" href="index.php?page=welcome">Welcome</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="index.php?page=addContact">Add Contact</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="index.php?page=deleteContacts">Delete Contact(s)</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="index.php?page=login">Logout</a>
+            </li>
   
-//         </ul>
+        </ul>
 
 
-//     </nav>
-// HTML;}
+    </nav>
+HTML;
+
+function security(){
+ session_start();
+ global $nav, $staffnav, $adminnav;
+ if($_SESSION['access']!='accessgranted'){
+     header('location:logout.php');
+     exit;
+ }elseif($_SESSION['status']== 'admin'){
+     $nav = $adminnav;
+ }elseif($_SESSION['status']=='staff'){
+    $nav = $staffnav;
+ }
+}
+ function admin(){
+  if($_SESSION['status'] != 'admin'){
+    header('location: logout.php');
+    exit;
+  }
+}
+
+
+
+
 if(isset($_GET)){
      if($_GET['page'] === "login"){
          require_once('pages/login.php');
-         $result = check();
+         security();
+         $result = init();
+         $nav="";
     
     }
     else if($_GET['page'] === "addContact"){
         require_once('pages/addContact.php');
+        security();
         $result = init();
     }
     
     else if($_GET['page'] === "deleteContacts"){
         require_once('pages/deleteContacts.php');
+        security();
         $result = init();
     }
     else if($_GET['page'] === "addAdmin"){
         require_once('pages/addAdmin.php');
+        security();
+        admin();
         $result = init();
     }
     else if($_GET['page'] === "deleteAdmin"){
         require_once('pages/deleteAdmin.php');
+        security();
+        admin();
         $result = init();
     }
 
     else if($_GET['page'] === "welcome"){
         require_once('pages/welcome.php');
-        $result = init();
-        //checking for admin
-         // if($_POST['status'] === "admin"){
-                //     //then go to admin welcome with admin privelages
-               // $_SESSION['name'] = $_POST['name'];
-                // }elseif($_POST['status'] === "staff"){
-                //     //then go to staff welcome with staff privelages
-                // $_SESSION['name'] = $_POST['name'];
-                // }
+        security();
+        $result = init($_SESSION['name']);
+        
     }
     else if($_GET['page'] === "logout"){
         require_once('pages/logout.php');
@@ -105,22 +130,5 @@ else {
     header('location: '.$path);
 }
 
-//     if(isset($_POST['submit'])){
-    //         $pdo = new PdoMethods();
-          
-    //           /* HERE I CREATE THE SQL STATEMENT I AM BINDING THE PARAMETERS */
-    //           $sql = "SELECT * FROM admins WHERE email = $_POST['email'] AND password = $_POST['password']";
-    //           $records = $pdo->selectNotBinded($sql);
-    //           if($_POST['email'] === "email" && $_POST['password'] === "password"){
-    
-    //             session_start();
-    //             $_SESSION['access'] = "accessGranted";
-            
-    //             header('location:pages/welcome.php');
-    //           }
-    //           else {
-    //             return "Incorrect username or password";
-    //           }
-    // }
 
 ?>

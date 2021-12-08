@@ -1,84 +1,122 @@
 <?php
-$error="";
-function check(){
-  require_once('classes/Pdo_methods.php');
-if(isset($_POST['submit'])){
-  if($_POST['email'] === "you@email.com" && $_POST['password'] === "password"){
-    session_start();
-    $_SESSION['access'] = "accessGranted";
-    header('location: index.php?page=welcome');
-  }else{
-    $error = "Incorrect email or password";
-    return $error;
+
+/* HERE I REQUIRE AND USE THE STICKYFORM CLASS THAT DOES ALL THE VALIDATION AND CREATES THE STICKY FORM.  THE STICKY FORM CLASS USES THE VALIDATION CLASS TO DO THE VALIDATION WORK.*/
+require_once('classes/StickyForm.php');
+$stickyForm = new StickyForm();
+
+/*THE INIT FUNCTION IS WRITTEN TO START EVERYTHING OFF IT IS CALLED FROM THE INDEX.PHP PAGE */
+function init(){
+  global $elementsArr, $stickyForm;
+
+  /* IF THE FORM WAS SUBMITTED DO THE FOLLOWING  */
+  if(isset($_POST['submit'])){
+
+    /*THIS METHODS TAKE THE POST ARRAY AND THE ELEMENTS ARRAY (SEE BELOW) AND PASSES THEM TO THE VALIDATION FORM METHOD OF THE STICKY FORM CLASS.  IT UPDATES THE ELEMENTS ARRAY AND RETURNS IT, THIS IS STORED IN THE $postArr VARIABLE */
+    $postArr = $stickyForm->validateForm($_POST, $elementsArr);
+
+    /* THE ELEMENTS ARRAY HAS A MASTER STATUS AREA. IF THERE ARE ANY ERRORS FOUND THE STATUS IS CHANGED TO "ERRORS" FROM THE DEFAULT OF "NOERRORS".  DEPENDING ON WHAT IS RETURNED DEPENDS ON WHAT HAPPENS NEXT.  IN THIS CASE THE RETURN MESSAGE HAS "NO ERRORS" SO WE HAVE NO PROBLEMS WITH OUR VALIDATION AND WE CAN SUBMIT THE FORM */
+    if($postArr['masterStatus']['status'] == "noerrors"){
+      $res = addData($_POST);
+
+      if($res=="error"){
+        return getform("<h1>Login</h1><p>There was an error returning your request</p>",$elementsArr);
+      }
+          
+      else if(count($res)>0){
+            session_start();
+            $_SESSION['access']="accessgranted";
+            $_SESSION['status']=$res[0]['status'];
+            $_SESSION['name']=$res[0]['name'];
+            header('location: index.php?page=welcome');
+
+          }
+          else {
+            return getform("<h1>Login</h1><p>Credentials not found</p>",$elementsArr);
+            
+          }
+          
+        }
+    else{
+         return getform("<h1>login</h1>",$postarr);
+        }
   }
-
-  // $pdo = new PdoMethods();
-
-  //   /* HERE I CREATE THE SQL STATEMENT I AM BINDING THE PARAMETERS */
-  //   echo $sql = "SELECT * FROM admins"; 
-  //   $records = $pdo->selectNotBinded($sql);
-  //   if($_POST['email'] === "email" && $_POST['password'] === "password"){
-
-  //     session_start();
-  //     $_SESSION['access'] = "accessGranted";
   
-  //     header('location:pages/welcome.php');
-  //   }
-  //   else {
-  //     return "Incorrect username or password";
-  //   }
+  else{
+         return getform("<h1>Login</h1>",$elementsArr);
+       }
+    
+ }
+
+/* THIS IS THE DATA OF THE FORM.  IT IS A MULTI-DIMENTIONAL ASSOCIATIVE ARRAY THAT IS USED TO CONTAIN FORM DATA AND ERROR MESSAGES.   EACH SUB ARRAY IS NAMED BASED UPON WHAT FORM FIELD IT IS ATTACHED TO. FOR EXAMPLE, "NAME" GOES TO THE TEXT FIELDS WITH THE NAME ATTRIBUTE THAT HAS THE VALUE OF "NAME". NOTICE THE TYPE IS "TEXT" FOR TEXT FIELD.  DEPENDING ON WHAT HAPPENS THIS ASSOCIATE ARRAY IS UPDATED.*/
+$elementsArr = [
+  "masterStatus"=>[
+    "status"=>"noerrors",
+    "type"=>"masterStatus"
+  ],
+	"email"=>[
+        "errorMessage"=>"<span style='color: red; margin-left: 15px;'>cannot be blank and must be a standard email</span>",
+        "errorOutput"=>"",
+        "type"=>"text",
+        "value"=>"you@email.com",
+        "regex"=>"email"
+    ],
+    "password"=>[
+        "errorMessage"=>"<span style='color: red; margin-left: 15px;'>cannot be blank</span>",
+        "errorOutput"=>"",
+        "type"=>"text",
+        "value"=>"",
+        "regex"=>"password"
+    ]
+     
+];
+/*THIS FUNCTION CAN BE CALLED TO ADD DATA TO THE DATABASE */
+function addData($post){
+  global $elementsArr;  
+  /* IF EVERYTHING WORKS ADD THE DATA HERE TO THE DATABASE HERE USING THE $_POST SUPER GLOBAL ARRAY */
+      //print_r($_POST);
+      require_once('classes/Pdo_methods.php');
+
+      $pdo = new PdoMethods();
+
+      $sql = "SELECT * FROM admins WHERE email=:email and password=:password";
+
+      $bindings = [
+        [':email',$post['email'],'str'],
+        [':password',$post['password'],'str'],
+      ];
+
+      $result = $pdo->selectBinded($sql, $bindings);
+
+      return $result;
+      
 }
+   
+/*THIS IS THEGET FROM FUCTION WHICH WILL BUILD THE FORM BASED UPON UPON THE (UNMODIFIED OF MODIFIED) ELEMENTS ARRAY. */
+function getForm($acknowledgement, $elementsArr){
+
+global $stickyForm;
+
+/* THIS IS A HEREDOC STRING WHICH CREATES THE FORM AND ADD THE APPROPRIATE VALUES AND ERROR MESSAGES */
+$form = <<<HTML
+    
+    <form method="post" action="index.php?page=login">
+    
+    <div class="form-group">
+      <label for="email">Email {$elementsArr['email']['errorOutput']}</label>
+      <input type="text" class="form-control" id="email" name="email" value="{$elementsArr['email']['value']}" >
+    </div>
+    <div class="form-group">
+      <label for="password">Password {$elementsArr['password']['errorOutput']}</label>
+      <input type="text" class="form-control" id="password" name="password" value="{$elementsArr['password']['value']}" >
+    </div>
+    <div>
+    <button type="submit" name="submit" class="btn btn-primary">Login</button>
+    </div>
+  </form>
+HTML;
+
+/* HERE I RETURN AN ARRAY THAT CONTAINS AN ACKNOWLEDGEMENT AND THE FORM.  THIS IS DISPLAYED ON THE INDEX PAGE. */
+return [$acknowledgement, $form];
+
 }
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-  <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <!-- Bootstrap CSS -->
-     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-	<title>Session Index page</title>
-		
-	<!--below is a script which allows IE 8 to understand HTML 5 elements.-->
-	<!--[if lt IE 9]>
-    	<script>
-    		var elementsArray = ['abbr', 'article', 'aside', 'audio', 'bdi', 'canvas', 'data', 'datalist', 'details', 'figcaption', 'figure', 'footer', 'header', 'main', 'mark', 'meter', 'nav', 'output', 'progress', 'section', 'summary', 'template', 'time', 'video'];
-    		var len = elementsArray.length;
-    		for(i = 0; i < len; i++){
-    			document.createElement(elementsArray[i]);
-    		}
-    	</script>
-	<![endif]-->
-
-	<!--CSS style sheet goes here-->
- 
-  </head>
-  <body>
-    <div class="container">
-	<div id="wrapper">
-    <header>
-      <h1>Login</h1>
-    </header>
-    <main>
-      
-      <!-- <p>Username is "admin" password is "password"</p> -->
-      <form action="index.php" method="post">
-        <div class="form-group">
-          <p> <?php echo $error ?></p>
-          <label>Email </label>
-          <input type="text" name="fname" class="form-control">
-          <label>Password: </label>
-          <input type="password" name="password" class="form-control">
-          <button type="submit" id="submit" name="submit" class="btn btn-primary">Login</button>
-        </div>
-      </div>
-        
-        
-      </form> 
-    </main>
-    
-  </div>
-  </body>
-</html>

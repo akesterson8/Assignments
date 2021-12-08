@@ -82,22 +82,6 @@ function addData($post){
 
       $sql = "INSERT INTO admins (name, email, password, status) VALUES (:name, :email, :password, :status)";
 
-    //   /* THIS TAKE THE ARRAY OF CHECK BOXES AND PUT THE VALUES INTO A STRING SEPERATED BY COMMAS  */
-    //   if(isset($_POST['financial'])){
-    //     $financial = "";
-    //     foreach($post['financial'] as $v){
-    //       $financial .= $v.",";
-    //     }
-    //     /* REMOVE THE LAST COMMA FROM THE CONTACTS */
-    //     $financial = substr($financial, 0, -1);
-    //   }
-
-    //   if(isset($_POST['eyeColor'])){
-    //     $eyeColor = $_POST['eyeColor'];
-    //   }
-    //   else {
-    //     $eyeColor = "";
-    //   }
 
 
       $bindings = [
