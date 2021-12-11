@@ -57,7 +57,8 @@ function security(){
  session_start();
  global $nav, $staffnav, $adminnav;
  if($_SESSION['access']!='accessgranted'){
-     header('location:logout.php');
+     header('location:logout.php'); 
+     //header('location : index.php?page=login');
      exit;
  }elseif($_SESSION['status']== 'admin'){
      $nav = $adminnav;
@@ -68,6 +69,7 @@ function security(){
  function admin(){
   if($_SESSION['status'] != 'admin'){
     header('location: logout.php');
+    //header('location : index.php?page=login');
     exit;
   }
 }
@@ -78,7 +80,6 @@ function security(){
 if(isset($_GET)){
      if($_GET['page'] === "login"){
          require_once('pages/login.php');
-         security();
          $result = init();
          $nav="";
     
@@ -117,6 +118,7 @@ if(isset($_GET)){
         require_once('pages/logout.php');
         session_destroy();
         $result = header('Location: index.php?page=login');
+        
     }
 
     else {
